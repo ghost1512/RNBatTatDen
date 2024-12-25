@@ -4,7 +4,6 @@ const mysql = require("mysql2");
 const mqtt = require("mqtt");
 
 const app = express();
-const port = 3000;
 
 // Cấu hình MySQL
 const db = mysql.createConnection({
