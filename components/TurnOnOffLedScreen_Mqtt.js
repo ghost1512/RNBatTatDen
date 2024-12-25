@@ -21,12 +21,9 @@ const options = {
 
 const client = new Paho.MQTT.Client(options.host, options.port, options.path);
 
-const TurnOnOffLedScreen_Mqtt = () => {
+const DoorControlScreen = () => {
   const [msg, setMsg] = useState("No message");
-  const [statusLed, setStatusLed] = useState("off");
   const [doorStatus, setDoorStatus] = useState("closed");
-  const [temperature, setTemperature] = useState("N/A");
-  const [humidity, setHumidity] = useState("N/A");
 
   useEffect(() => {
     connect();
@@ -56,9 +53,7 @@ const TurnOnOffLedScreen_Mqtt = () => {
   };
 
   const subscribeTopic = () => {
-    client.subscribe("nhomNN/v1/device/led/rpc", { qos: 0 });
-    client.subscribe("nhomNN/v1/device/dht/rpc", { qos: 0 });
-    client.subscribe("nhomNN/v1/device/door/rpc", { qos: 0 }); // Subscribe to Door control topic
+    client.subscribe("nhomNN/v1/device/door/rpc", { qos: 0 });
   };
 
   const onMessageArrived = async (message) => {
@@ -67,27 +62,12 @@ const TurnOnOffLedScreen_Mqtt = () => {
 
     try {
       const jsondata = JSON.parse(message.payloadString);
-      if (jsondata.name === "led") {
-        setStatusLed(jsondata.status);
-      } else if (jsondata.name === "dht") {
-        setTemperature(jsondata.temp);
-        setHumidity(jsondata.humid);
-      } else if (jsondata.name === "door") {
+      if (jsondata.name === "door") {
         setDoorStatus(jsondata.status);
       }
     } catch (error) {
       console.error("Error parsing JSON:", error);
     }
-  };
-
-  const handleTurnOnLed = () => {
-    console.log("turn on led...");
-    publishTopic("nhomNN/v1/device/led/rpc", '{"message":"turn on led","name":"led","status":"on"}');
-  };
-
-  const handleTurnOffLed = () => {
-    console.log("turn off led...");
-    publishTopic("nhomNN/v1/device/led/rpc", '{"message":"turn off led","name":"led","status":"off"}');
   };
 
   const handleOpenDoor = () => {
@@ -101,37 +81,14 @@ const TurnOnOffLedScreen_Mqtt = () => {
   };
 
   return (
-    <View style={styles.containerLedView}>
+    <View style={styles.containerView}>
       <View style={styles.header}>
         <Ionicons name="home" size={64} color="orange" />
         <Text style={styles.title}>Smart Home</Text>
-        <Text style={styles.subTitle}>ON / OFF LIGHT</Text>
+        <Text style={styles.subTitle}>DOOR CONTROL</Text>
       </View>
 
       <View style={styles.main}>
-        {/* LED Status */}
-        {statusLed === "on" ? (
-          <View style={styles.boxLightOn}>
-            <Ionicons name="bulb" size={64} color="orange" />
-          </View>
-        ) : (
-          <View style={styles.boxLightOff}>
-            <Ionicons name="bulb" size={64} color="grey" />
-          </View>
-        )}
-
-        <View style={styles.controlGroup}>
-          <TouchableOpacity style={[styles.btnOff, styles.btn]} onPress={handleTurnOffLed}>
-            <Text style={styles.btnText}>OFF</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.btnOn, styles.btn]} onPress={handleTurnOnLed}>
-            <Text style={styles.btnText}>ON</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Door Control */}
-        <Text style={styles.subTitle}>DOOR CONTROL</Text>
         <View style={styles.controlGroup}>
           <TouchableOpacity style={[styles.btnOff, styles.btn]} onPress={handleCloseDoor}>
             <Text style={styles.btnText}>CLOSE</Text>
@@ -143,20 +100,13 @@ const TurnOnOffLedScreen_Mqtt = () => {
         </View>
 
         <Text style={styles.subTitle}>{msg}</Text>
-
-        {/* DHT Sensor Data */}
-        <View style={styles.sensorContainer}>
-          <Text style={styles.sensorTitle}>DHT Sensor Readings</Text>
-          <Text style={styles.sensorText}>Temperature: {temperature}°C</Text>
-          <Text style={styles.sensorText}>Humidity: {humidity}%</Text>
-        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  containerLedView: {
+  containerView: {
     flex: 1,
     backgroundColor: "#212121",
     padding: 15,
@@ -205,34 +155,6 @@ const styles = StyleSheet.create({
   btnText: {
     color: "#FFFFFF",
   },
-  boxLightOff: {
-    width: 100,
-    height: 100,
-    borderWidth: 2,
-    borderRadius: 5,
-    borderColor: "grey",
-    padding: 15,
-  },
-  boxLightOn: {
-    width: 100,
-    height: 100,
-    borderWidth: 2,
-    borderRadius: 5,
-    borderColor: "orange",
-    padding: 15,
-  },
-  sensorContainer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  sensorTitle: {
-    fontSize: 24,
-    color: "white",
-    marginBottom: 5,
-  },
-  sensorText: {
-    fontSize: 18,
-    color: "lightgrey",
-  },
 });
-export default TurnOnOffLedScreen_Mqtt;
+
+export default DoorControlScreen;
